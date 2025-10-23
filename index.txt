@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LUX DIVINA — Enigma Románico</title>
+  <style>
+    :root{
+      --bg1:#0b1020; --bg2:#0e1326; --ink:#e6edf6; --muted:#94a3b8;
+      --gold:#c9a227; --accent:#9bdcff; --rose:#ffd6d6; --green:#b7ffbf;
+      --card:#0f172a; --border:#263145;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:radial-gradient(1200px 600px at 50% -200px, #1f2937 0%, #0b1020 55%, #060913 100%); color:var(--ink); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Arial}
+    a{color:inherit}
+    .wrap{min-height:100vh; display:grid; place-items:center; padding:24px}
+
+    /* -------- Pantalla de acceso -------- */
+    .gate{width:100%; max-width:720px}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.1)); border:1px solid var(--border); border-radius:16px; padding:22px; box-shadow:0 30px 60px rgba(0,0,0,.45)}
+    .gate h1{margin:0 0 6px 0; font-size:28px; letter-spacing:.02em}
+    .gate p{margin:0 0 14px 0; color:var(--muted)}
+    .gate form{display:flex; gap:8px; margin-top:8px}
+    .gate input{flex:1; background:#0b1222; color:var(--ink); border:1px solid var(--border); border-radius:12px; padding:12px 14px; font-size:16px; outline:none}
+    .btn{border:1px solid var(--border); background:#172033; color:var(--ink); font-weight:700; border-radius:12px; padding:12px 14px; cursor:pointer}
+    .btn.gold{background:linear-gradient(180deg,#3a2b0e,#221a09); border-color:#4f3b12; color:#f7e5a5}
+    .err{margin-top:10px; background:#3c0e16; border:1px solid #6b1222; color:#ffd6df; padding:8px 10px; border-radius:10px; font-size:14px}
+
+    /* -------- Escena del templo -------- */
+    .app{display:none; width:100%; max-width:1100px; gap:16px}
+    .grid{display:grid; grid-template-columns: 1.35fr .8fr; gap:16px}
+    .panel{background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.08)); border:1px solid var(--border); border-radius:16px; overflow:hidden}
+    .panel h2{margin:0; padding:14px 16px; font-size:18px; border-bottom:1px solid var(--border); background:rgba(0,0,0,.25)}
+    .panel .body{padding:14px 16px}
+
+    /* SVG contenedor */
+    .temple{width:100%; height:auto; display:block; background:radial-gradient(800px 500px at 50% -100px, rgba(255,255,255,.05), rgba(0,0,0,.55))}
+    .legend{display:flex; gap:10px; flex-wrap:wrap; font-size:13px; color:var(--muted)}
+    .chip{padding:4px 8px; border:1px solid var(--border); border-radius:999px; background:#0a1222}
+
+    /* Hotspots y efectos de luz */
+    .hotspot{cursor:pointer}
+    .glow{opacity:.08; transition:opacity .18s ease, filter .18s ease}
+    .hotspot:hover .glow{opacity:.55; filter:drop-shadow(0 0 10px rgba(255,255,200,.45)) drop-shadow(0 0 30px rgba(255,240,180,.25))}
+    .label{opacity:0; transform:translateY(6px); transition:opacity .18s ease, transform .18s ease; pointer-events:none}
+    .hotspot:hover .label{opacity:1; transform:translateY(0)}
+
+    /* Etiquetas correctas y señuelos */
+    .roman{font: 700 26px/1 "Georgia", ui-serif; fill:#f9e7a4; paint-order:stroke; stroke:#6b5b16; stroke-width:1.5}
+    .greek{font: 700 24px/1 "Georgia", ui-serif; fill:#a2e6ff; paint-order:stroke; stroke:#0b3a4f; stroke-width:1.2}
+
+    /* Pistas laterales */
+    .hint{background:linear-gradient(180deg, rgba(255,230,150,.06), rgba(255,230,150,.02)); border:1px solid #3b2e0d; color:#f6e7b0; border-radius:12px; padding:12px; margin-top:10px}
+    .hint small{display:block; color:#d7c48f}
+    .poem{margin:10px 0 0 0; padding-left:18px}
+    .poem li{margin:6px 0}
+    .poem em{color:#ffe69a}
+
+    /* Pie */
+    .note{margin-top:10px; font-size:12px; color:#9aa7bd}
+
+    /* Mostrar app cuando desbloqueada */
+    .show{display:block}
+  </style>
+</head>
+<body>
+  <!-- ---------- PANTALLA DE ACCESO ---------- -->
+  <div class="wrap gate" id="gate">
+    <div class="card">
+      <h1>🌟 LUX DIVINA</h1>
+      <p>“Solo la <b>Lux Divina</b> abre las puertas del templo románico.”</p>
+      <form id="gateForm" autocomplete="off">
+        <input id="gateInput" type="text" placeholder="Escribe el código… (pista: LUX DIVINA)" aria-label="Código de acceso" autofocus />
+        <button class="btn gold" type="submit">Entrar</button>
+      </form>
+      <div id="gateErr" class="err" style="display:none">Código incorrecto. Prueba con las palabras del frontón: <b>LUX DIVINA</b>.</div>
+    </div>
+  </div>
+
+  <!-- ---------- APLICACIÓN / ENIGMA ---------- -->
+  <div class="wrap app" id="app">
+    <div class="grid">
+      <!-- ESCENA -->
+      <div class="panel">
+        <h2>Templo románico (interior)</h2>
+        <!-- SVG “imagen” integrada y oscura -->
+        <svg class="temple" viewBox="0 0 1200 760" role="img" aria-label="Interior de iglesia románica con ábside, arco y columnas">
+          <!-- Fondo nave -->
+          <defs>
+            <radialGradient id="vignette" cx="50%" cy="-10%" r="90%">
+              <stop offset="0%" stop-color="#1b2436"/>
+              <stop offset="60%" stop-color="#0c1120"/>
+              <stop offset="100%" stop-color="#070b16"/>
+            </radialGradient>
+            <linearGradient id="stone" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#2a3347"/>
+              <stop offset="100%" stop-color="#1c2333"/>
+            </linearGradient>
+            <linearGradient id="golden" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#f6e7b0" stop-opacity=".95"/>
+              <stop offset="100%" stop-color="#b6952a" stop-opacity=".75"/>
+            </linearGradient>
+          </defs>
+
+          <rect x="0" y="0" width="1200" height="760" fill="url(#vignette)"/>
+
+          <!-- Planta sencilla: columnas y arcos -->
+          <!-- Columnas -->
+          <g fill="url(#stone)" opacity=".8">
+            <rect x="190" y="350" width="50" height="250" rx="8"/>
+            <rect x="960" y="350" width="50" height="250" rx="8"/>
+            <rect x="360" y="420" width="46" height="180" rx="8"/>
+            <rect x="790" y="420" width="46" height="180" rx="8"/>
+          </g>
+
+          <!-- Arco triunfal -->
+          <path d="M240,360 Q600,120 960,360" fill="none" stroke="#222b3f" stroke-width="36" opacity=".9"/>
+          <path d="M260,360 Q600,140 940,360" fill="none" stroke="#1a2234" stroke-width="20" opacity=".9"/>
+
+          <!-- Ábside semicircular -->
+          <path d="M420,180 A180,160 0 0 1 780,180 L780,320 L420,320 Z" fill="#1d2436" stroke="#25324a" stroke-width="3" opacity=".95"/>
+
+          <!-- Altar -->
+          <rect x="560" y="300" width="80" height="35" fill="#2a3347" stroke="#31405c" stroke-width="2"/>
+
+          <!-- Ventanas laterales (señuelos griegos) -->
+          <g fill="#1a2234" stroke="#263145" stroke-width="3" opacity=".85">
+            <rect x="90"  y="260" width="70" height="120" rx="10"/>
+            <rect x="1040" y="260" width="70" height="120" rx="10"/>
+          </g>
+
+          <!-- ---------------- HOTSPOTS INTERACTIVOS ---------------- -->
+          <!-- 1) ÁBSIDE (correcto: III) -->
+          <g class="hotspot" aria-label="Ábside" tabindex="0">
+            <!-- área luminosa -->
+            <path class="glow" d="M430,190 A170,150 0 0 1 770,190 L770,305 L430,305 Z" fill="url(#golden)"/>
+            <!-- etiqueta -->
+            <text class="label roman" x="600" y="245" text-anchor="middle">III</text>
+          </g>
+
+          <!-- 2) CÚPULA / CLAVE DEL ARCO (correcto: I) -->
+          <g class="hotspot" aria-label="Clave del arco" tabindex="0">
+            <circle class="glow" cx="600" cy="170" r="42" fill="url(#golden)"/>
+            <text class="label roman" x="600" y="175" text-anchor="middle">I</text>
+          </g>
+
+          <!-- 3) CAPITEL / COLUMNA DERECHA (correcto: V) -->
+          <g class="hotspot" aria-label="Capitel" tabindex="0">
+            <rect class="glow" x="785" y="405" width="56" height="40" fill="url(#golden)"/>
+            <text class="label roman" x="813" y="432" text-anchor="middle">V</text>
+          </g>
+
+          <!-- Señuelos: letras griegas -->
+          <!-- Ventana izquierda -->
+          <g class="hotspot" aria-label="Ventana" tabindex="0">
+            <rect class="glow" x="92" y="262" width="66" height="116" rx="10" fill="#7fd8ff"/>
+            <text class="label greek" x="125" y="325" text-anchor="middle">Ω</text>
+          </g>
+          <!-- Ventana derecha -->
+          <g class="hotspot" aria-label="Ventana" tabindex="0">
+            <rect class="glow" x="1042" y="262" width="66" height="116" rx="10" fill="#7fd8ff"/>
+            <text class="label greek" x="1075" y="325" text-anchor="middle">α</text>
+          </g>
+          <!-- Arco lateral señuelo -->
+          <g class="hotspot" aria-label="Arco lateral" tabindex="0">
+            <rect class="glow" x="350" y="395" width="56" height="40" fill="#7fd8ff"/>
+            <text class="label greek" x="378" y="422" text-anchor="middle">λ</text>
+          </g>
+        </svg>
+
+        <div class="legend" style="padding:12px 16px 16px">
+          <span class="chip">Pasa el ratón por el templo…</span>
+          <span class="chip">Solo <b>tres</b> signos son clave</span>
+          <span class="chip">Los griegos son <b>señuelo</b></span>
+        </div>
+      </div>
+
+      <!-- PISTAS -->
+      <div class="panel">
+        <h2>Pistas enigmáticas</h2>
+        <div class="body">
+          <div class="hint">
+            <small>Susurro del monje:</small>
+            <ul class="poem">
+              <li>“<em>Donde la luz abraza el altar</em>, tres rayos se derraman.”</li>
+              <li>“En la <em>clave que sostiene el cielo</em>, uno solo resplandece.”</li>
+              <li>“Y en la <em>piedra donde se cuenta el saber</em>, cinco hojas de luz.”</li>
+            </ul>
+          </div>
+          <p style="margin-top:12px">Ordena los <b>tres</b> signos iluminados según las pistas. No te dejes confundir por las letras griegas.</p>
+          <div class="hint">
+            <small>Para el siguiente candado…</small>
+            <p style="margin:6px 0 0 0">Anota los números romanos y conviértelos a cifras: <b>III → 3</b>, <b>I → 1</b>, <b>V → 5</b>.<br/> Orden correcto: <b>Ábside → Clave del arco → Capitel</b> ⇒ Código: <b>315</b>.</p>
+          </div>
+          <p class="note">Sugerencia docente: Puedes ocultar este bloque de solución comentándolo en el HTML si vas a usar un candado físico.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Control de acceso ---
+    const gate = document.getElementById('gate');
+    const app  = document.getElementById('app');
+    const gateForm = document.getElementById('gateForm');
+    const gateInput = document.getElementById('gateInput');
+    const gateErr = document.getElementById('gateErr');
+
+    function showApp(){
+      gate.classList.remove('show'); gate.style.display='none';
+      app.classList.add('show'); app.style.display='block';
+    }
+
+    // Recordar acceso si ya se desbloqueó
+    try{
+      if(sessionStorage.getItem('lux_divina_ok')==='1'){ showApp(); }
+    }catch{}
+
+    gateForm.addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const val = (gateInput.value || '').trim().toLowerCase();
+      if(val === 'lux divina' || val === 'luxdivina' || val === 'lux  divina'){
+        try{ sessionStorage.setItem('lux_divina_ok','1'); }catch{}
+        showApp();
+      }else{
+        gateErr.style.display='block';
+      }
+    });
+
+    gateInput.addEventListener('input', ()=> gateErr.style.display='none');
+  </script>
+</body>
+</html>
